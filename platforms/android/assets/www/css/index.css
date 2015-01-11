@@ -1,0 +1,41 @@
+* {
+    font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
+}
+
+#addressinput ul {
+    margin-left: -40px;
+    width: 320px;
+    overflow: hidden;
+    font-size: 11px;
+}
+
+#addressinput ul li a {
+    padding-left: 15px;
+}
+
+.H_ib_close {
+    display: none;
+}
+
+.H_ib_content {
+    min-width: 3.4em !important;
+}
+
+.H_ib_body {
+    padding: 0 !important;
+}
+
+.H_ib {
+    opacity: .93;
+}
+
+.badge {
+    background-color: #777 !important;
+    padding: 3px 5px !important;
+}
+
+.modal-dialog {
+    background-color: #fff;
+    border-radius: 20px;
+    z-index: 5;
+}

@@ -1,0 +1,15 @@
+video#bgvid {
+    position: absolute; left: 0; top: 0;
+    width: 360px; height: 567px; z-index: -100;
+    background-size: cover;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 567px;
+    width: 360px;
+    background-color: rgba(0,200,0,.5);
+    z-index: 1;
+}

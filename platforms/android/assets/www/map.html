@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="msapplication-tap-highlight" content="no"/>
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
+
+    <!--Stylesheets -->
+    <link rel="stylesheet" type="text/css"
+          href="css/index.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="http://js.api.here.com/v3/3.0/mapsjs-ui.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="css/bootstrap.css">
+
+    <!-- UI Embeds -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Map Embeds -->
+    <script type="text/javascript"
+            src="http://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
+    <script type="text/javascript"
+            src="http://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
+    <script type="text/javascript"
+            src="http://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <script type="text/javascript"
+            src="http://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+
+    <!-- Rest Embeds -->
+    <script type="text/javascript"
+            src="js/fermata.js"></script>
+
+    <!-- Cordova Embeds -->
+    <script type="text/javascript"
+            src="cordova.js"></script>
+
+    <!--Bootstrap Embeds -->
+    <script type="text/javascript"
+            src="js/bootstrap.js"></script>
+    <script type="text/javascript"
+            src="js/typeahead.js"></script>
+
+    <!-- Personal Embeds -->
+    <script type="text/javascript"
+            src="js/index.js"></script>
+
+    <!-- Social (FB -->
+    <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+    <script>
+        Parse.initialize("83dqtbO6PMRkHSbzzXwEkspxAP9VhscthwtyYiam", "OaiZOSV4IYXtmg1ELEoXMKUQn2tsm6j0rBVMBzds");
+        window.fbAsyncInit = function () {
+            Parse.FacebookUtils.init({
+                appId: '1004008206294815',
+                xfbml: true,
+                version: 'v2.1'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <title>Hello World</title>
+</head>
+<body style="height: 567px; width: 360px; display: block; overflow: hidden;">
+<div style="height: 567px; width: 360px; display: block; overflow: hidden;">
+
+    <div id="map" style="width: 360px; height: 620px; background: grey;"/>
+
+    <div id="overlay" style="width: 360px; position: absolute; top: 0; left: 0; z-index: 2;">
+        <div class="input-group" id="addressinput"
+             style="padding-top: 20px; padding-left: 20px; padding-right: 20px; opacity: 0.98; font-size: 14px;">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="mapGuidance();"><span id="menuicon"
+                                                                                     class="glyphicon glyphicon-th-list"></span><span
+                class="badge" id="menubadge" style="display: none; opacity: 0;">83</span></button>
+      </span>
+            <input type="text" data-provide="typeahead" onfocus="zoomOut()" class="form-control typeahead"
+                   placeholder="Search for...">
+        </div>
+    </div>
+    <div id="bottom-overlay"
+         style="width: 360px; position: absolute; bottom: -200px; left: 0; z-index: 2; background-color: white;">
+        <img src="img/loading.gif" id="loading"
+             style="display: block; margin-left: auto; margin-right: auto; margin-top: 50px; margin-bottom: 50px;"/>
+
+        <div class="panel panel-default" id="bottom-panel" style="margin: 0; padding: 10px; opacity: 0; display: none;">
+            <table class="table">
+                <tr>
+                    <td style="font-weight: bold; font-size: 20px; color: #1DA82F; padding-bottom: 20px;">
+                        112 Miles <span style="font-size: 12px;">(100% EV)</span>
+                    </td>
+                    <td style="font-weight: bold; font-size: 18px; color: #222222; padding-bottom: 20px; padding-top: 11px;">
+                        <span class="label label-info" id="points" onclick="$('#pointsInfo').modal();">65 Points</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-size: 12px; color: #444444; border-top-color: #eee; padding-top: 10px; padding-bottom: 5px; padding-left: 13px;">
+                        San Quentin, CA 94964
+                    </td>
+                    <td id="passengers"
+                        style="border-top-color: #eee; font-size: 12px; padding-top: 10px; padding-bottom: 5px;">
+                        (1/4) Passengers
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="modal fade" id="pointsInfo">
+        <div class="modal-dialog">
+            <div class="modal-contpassengersent">
+                <div class="modal-body">
+                    <p style="text-align: center; font-size: 16px; font-weight: bold;">Here's some tips for getting more
+                        points!</p>
+                    <br>
+                    <span class="label label-success"
+                          style="margin-right: 10px; font-size: 14px; vertical-align: top;display: inline-block; margin-top: 4px;">EV Miles</span>
+
+                    <p style="display: inline-block; width: 65%;">The higher percentage of your trip you use electricity
+                        for, the better!</p>
+                    <br>
+                    <span class="label label-info"
+                          style="margin-right: 10px; font-size: 14px; vertical-align: top;display: inline-block; margin-top: 4px;">Passengers</span>
+
+                    <p style="display: inline-block; width: 65%;">Ride sharing is an even more efficient way to travel,
+                        the more the merrier!</p>
+                    <br>
+                    <span class="label label-default"
+                          style="margin-right: 10px; font-size: 14px; vertical-align: top; display: inline-block; margin-top: 4px;">Distance</span>
+
+                    <p style="display: inline-block; width: 65%;">Sometimes less is more. If possible, reduce your
+                        travel time and distance.</p>
+                </div>
+            </div>
+            <
+        </div>
+    </div>
+    <!-- UI Init -->
+    <script type="text/javascript">
+        function fancyFading() {
+            $("#menuicon").animate({opacity: 0}, 500, undefined, function () {
+                $("#menuicon").hide();
+                $("#menubadge").show();
+                $("#menubadge").animate({opacity: 1}, 500);
+            });
+
+        }
+
+        var selected = function (selectedObj) {
+            $('.typeahead').blur();
+            bottomUp();
+        };
+        $('.typeahead').typeahead({
+            source: ["San Quentin State Prison, San Quentin, CA 94964",
+                "51 Tamal Vista Boulevard, Corte Madera, CA 94925",
+                "Tiburon Boulevard, Tiburon, CA 94920",
+                "2025 Clarice Drive, San Jose, CA 95122",
+                "1 Cordevalle Club Drive, San Martin, CA 95046"], afterSelect: selected
+        });
+
+        function bottomUp() {
+            $('#bottom-overlay').animate({bottom: 0}, 1000);
+            setTimeout(function () {
+                $("#loading").animate({opacity: 0}, 500, undefined, function () {
+                    $("#loading").hide();
+                    $("#bottom-panel").css("display", "block");
+                    $("#bottom-panel").animate({opacity: 1}, 500);
+                });
+            }, 3000);
+        }
+
+        function zoomOut() {
+            map.setZoom(11);
+            drawCircles();
+        }
+    </script>
+
+    <!-- Car Data -->
+    <script type="text/javascript">
+        var vin = "WBY1Z4C55EV273078";
+
+        var vehicles = fermata.json("http://api.hackthedrive.com/vehicles");
+        var getVehicles = function (callback) {
+            vehicles.get(function (err, data, headers) {
+                callback(data)
+            });
+        };
+
+        var battery = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/battery/");
+        var getBattery = function (callback) {
+            battery.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+        var fuel = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/fuel/");
+        var getFuel = function (callback) {
+            fuel.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+        var doors = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/door/");
+        var getDoors = function (callback) {
+            doors.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+        var windows = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/window/");
+        var getWindows = function (callback) {
+            windows.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+        var trunk = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/trunk/");
+        var getTrunk = function (callback) {
+            windows.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+        var lastTrip = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/lastTrip/");
+        var getLastTrip = function (callback) {
+            lastTrip.get(function (err, data, headers) {
+                callback(data);
+            });
+        };
+
+
+        var carLat, carLon;
+        var getLocation = function (callback) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                carLat = position.coords.latitude;
+                carLon = position.coords.longitude;
+                callback(position);
+            });
+        };
+
+    </script>
+
+    <!-- Chargepoint Data -->
+    <script type="text/javascript">
+        var stations = fermata.raw({base: "http://openrender.netne.net/"});
+        var getStations = function (callback) {
+            stations.get(function (whatev, raw) {
+                var data = raw.data;
+                data = data.slice(0, data.length - 152);
+                callback(JSON.parse(data).stationData);
+            });
+        };
+        var stationLocations;
+        getStations(function (data) {
+            data.forEach(function (station) {
+                for (var i = 0; i < station.Port.length; i++) {
+                    if (station.Port[i].Voltage !== "240") {
+                        station.Port.splice(i, 1);
+                    }
+                }
+            });
+            stationLocations = data;
+            addChargePoints();
+        })
+    </script>
+
+    <!--Map Initialization -->
+    <script type="text/javascript">
+        function setMapCenter(map) {
+            getLocation(function (position) {
+                map.setCenter({lat: position.coords.latitude, lng: position.coords.longitude});
+                map.setZoom(14);
+            });
+        }
+
+        function addChargePoints() {
+            stationLocations.forEach(function (item) {
+                if (item.Port.length !== 0) {
+                    getCoordinates(item);
+                }
+            });
+        }
+
+        function getCoordinates(item) {
+            var concatAddress = item.Address + ", " + item.City + ", " + item.State + " " + item.postalCode;
+            var geocodingParams = {
+                searchText: concatAddress
+            };
+
+            var onResult = function (result) {
+                var locations = result.Response.View[0].Result[0].Location.DisplayPosition;
+                var marker = new H.map.Marker({
+                    lat: locations.Latitude,
+                    lng: locations.Longitude
+                });
+                map.addObject(marker);
+            };
+
+            // Call the geocode method with the geocoding parameters,
+            // the callback and an error callback function (called if a
+            // communication error occurs):
+            geocoder.geocode(geocodingParams, onResult, function (e) {
+                alert(e);
+            });
+        }
+
+        //Step 1: initialize communication with the platform
+        var platform = new H.service.Platform({
+            app_id: 'XEtYgvPuYfcGE3oFj0KJ',
+            app_code: 'O7o41_pLJ2s_PNZHYojsBQ',
+            useCIT: true
+        });
+
+        // Get an instance of the geocoding service:
+        var geocoder = platform.getGeocodingService();
+
+        var defaultLayers = platform.createDefaultLayers();
+
+        var map = new H.Map(document.getElementById('map'),
+                defaultLayers.normal.map);
+
+        //Step 3: make the map interactive
+        // MapEvents enables the event system
+        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+        // Create the default UI components
+        var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+        // Now use the map as required...
+        setMapCenter(map);
+
+    </script>
+
+    <!-- Draw Range Boundaries -->
+    <script type="text/javascript">
+        var electricRange, gasRange;
+        getBattery(function (data) {
+            electricRange = data.remainingRangeKm * 100;
+        });
+
+        getFuel(function (data) {
+            gasRange = data.remainingRangeKm * 100;
+        });
+        function drawCircles() {
+            var circle = new H.map.Circle({
+                lat: carLat,
+                lng: carLon
+            }, electricRange + gasRange, {style: {fillColor: 'rgba(87,200,235, 0.2)'}});
+            map.addObject(circle);
+
+            var bubble = new H.ui.InfoBubble({lng: carLon + .02, lat: carLat}, {
+                content: '<p style="font-size: 10px; margin-bottom: 0;">Electric Range</p>'
+            });
+            ui.addBubble(bubble);
+
+            var circle2 = new H.map.Circle({
+                lat: carLat,
+                lng: carLon
+            }, electricRange + 4000, {style: {fillColor: 'rgba(30,235,120, 0.35)'}});
+            map.addObject(circle2);
+
+            var bubble2 = new H.ui.InfoBubble({lng: carLon - .06, lat: carLat + 0.08}, {
+                content: '<p style="font-size: 10px; margin-bottom: 0;">Electric + Gas Range</p>'
+            });
+            ui.addBubble(bubble2);
+
+            setTimeout(function () {
+                $(".H_ib").animate({opacity: 0}, 18000, undefined, function () {
+                    $(".H_ib").hide();
+                });
+            });
+        }
+
+
+    </script>
+
+    <!-- Map Route -->
+    <script type="text/javascript">
+        function mapGuidance() {
+            fancyFading();
+
+            var routingParameters = {
+                // The routing mode:
+                'mode': 'fastest;car',
+                // The start point of the route:
+                'waypoint0': 'geo!' + carLat + ',' + carLon,
+                // The end point of the route:
+                'waypoint1': 'geo!37.800892,-122.458967',
+                // To retrieve the shape of the route we choose the route
+                // representation mode 'display'
+                'representation': 'display'
+            };
+
+            var onResult = function (result) {
+                var route,
+                        routeShape,
+                        startPoint,
+                        endPoint,
+                        strip;
+                if (result.response.route) {
+                    // Pick the first route from the response:
+                    route = result.response.route[0];
+                    // Pick the route's shape:
+                    routeShape = route.shape;
+
+                    // Create a strip to use as a point source for the route line
+                    strip = new H.geo.Strip();
+
+                    // Push all the points in the shape into the strip:
+                    routeShape.forEach(function (point) {
+                        var parts = point.split(',');
+                        strip.pushLatLngAlt(parts[0], parts[1]);
+                    });
+
+                    // Retrieve the mapped positions of the requested waypoints:
+                    startPoint = route.waypoint[0].mappedPosition;
+                    endPoint = route.waypoint[1].mappedPosition;
+
+                    // Create a polyline to display the route:
+                    var routeLine = new H.map.Polyline(strip, {
+                        style: {strokeColor: 'white', lineWidth: 10},
+                        arrows: {fillColor: 'red', frequency: 1, width: 0.8, length: 0.7}
+                    });
+
+                    // Create a marker for the start point:
+                    var startMarker = new H.map.Marker({
+                        lat: startPoint.latitude,
+                        lng: startPoint.longitude
+                    });
+
+                    // Create a marker for the end point:
+                    var endMarker = new H.map.Marker({
+                        lat: endPoint.latitude,
+                        lng: endPoint.longitude
+                    });
+
+                    // Add the route polyline and the two markers to the map:
+                    map.addObjects([routeLine, startMarker, endMarker]);
+
+                    // Set the map's viewport to make the whole route visible:
+                    map.setViewBounds(routeLine.getBounds());
+                }
+            };
+            var router = platform.getRoutingService();
+            router.calculateRoute(routingParameters, onResult,
+                    function (error) {
+                        alert(error.message);
+                    });
+
+            /*        var circle = new H.map.Circle({lat: 37.938629, lng: -122.489847, fillColor: "rgba(255, 145, 145, .3)"}, electricRange);
+             map.addObject(circle);*/
+
+            var routingParameters = {
+                // The routing mode:
+                'mode': 'fastest;car',
+                // The start point of the route:
+                'waypoint0': 'geo!37.800892,-122.458967',
+                // The end point of the route:
+                'waypoint1': 'geo!37.938629,-122.489847',
+                // To retrieve the shape of the route we choose the route
+                // representation mode 'display'
+                'representation': 'display'
+            };
+
+            var onResult = function (result) {
+                var route,
+                        routeShape,
+                        startPoint,
+                        endPoint,
+                        strip;
+                if (result.response.route) {
+                    // Pick the first route from the response:
+                    route = result.response.route[0];
+                    // Pick the route's shape:
+                    routeShape = route.shape;
+
+                    // Create a strip to use as a point source for the route line
+                    strip = new H.geo.Strip();
+
+                    // Push all the points in the shape into the strip:
+                    routeShape.forEach(function (point) {
+                        var parts = point.split(',');
+                        strip.pushLatLngAlt(parts[0], parts[1]);
+                    });
+
+                    // Retrieve the mapped positions of the requested waypoints:
+                    startPoint = route.waypoint[0].mappedPosition;
+                    endPoint = route.waypoint[1].mappedPosition;
+
+                    // Create a polyline to display the route:
+                    var routeLine = new H.map.Polyline(strip, {
+                        style: {strokeColor: 'white', lineWidth: 10},
+                        arrows: {fillColor: 'black', frequency: 1, width: 0.8, length: 0.7}
+                    });
+
+                    // Create a marker for the start point:
+                    var startMarker = new H.map.Marker({
+                        lat: startPoint.latitude,
+                        lng: startPoint.longitude
+                    });
+
+                    // Create a marker for the end point:
+                    var endMarker = new H.map.Marker({
+                        lat: endPoint.latitude,
+                        lng: endPoint.longitude
+                    });
+
+                    // Add the route polyline and the two markers to the map:
+                    map.addObjects([routeLine, startMarker, endMarker]);
+
+                    // Set the map's viewport to make the whole route visible:
+                    map.setViewBounds(routeLine.getBounds());
+                }
+            };
+            router.calculateRoute(routingParameters, onResult,
+                    function (error) {
+                        alert(error.message);
+                    });
+        }
+
+
+    </script>
+
+    <!-- Monitor Passengers / Trunk-->
+    <script type="text/javascript">
+        (function loopy() {
+            getDoors(function (data) {
+                if (data.isPassengerFrontOpen == true) {
+                    $("#passengers").text("(2/4) Passengers");
+                    $("#points").text("90 Points");
+                    trunkLoopy();
+                }
+                else {
+                    setTimeout(function () {loopy();}, 1000);
+                }
+            })
+        })();
+
+        function trunkLoopy () {
+            getTrunk(function(data) {
+                if ((data.isDriverOpen == true) || (data.isPassengerOpen == true)) {
+                    $("#passengers").text("(2/4) Passengers + Luggage");
+                    $("#points").text("83 Points");
+                }
+                else {
+                    setTimeout(function () {trunkLoopy();}, 1000);
+                }
+            });
+        }
+    </script>
+
+    <!-- Social Integration -->
+    <script type="text/javascript">
+        setTimeout(function () {
+            Parse.FacebookUtils.logIn(null, {
+                success: function (user) {
+                    if (!user.existed()) {
+                    } else {
+                    }
+                },
+                error: function (user, error) {
+                }
+            });
+        }, 10000);
+    </script>
+</div>
+</body>
+</html>
