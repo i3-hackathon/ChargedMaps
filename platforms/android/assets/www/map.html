@@ -346,12 +346,54 @@
 
     <!-- Draw Range Boundaries -->
     <script type="text/javascript">
-        var getIsoline = fermata.json("http://route.st.nlp.nokia.com/routing/6.2/calculateisoline.json/)
+/*        setTimeout(function() {
+            var getIsoline = fermata.json("http://route.nlp.nokia.com/routing/6.2/calculateisoline.json");
 
-        getIsoline.({mode: "fastest;car", start: carLat + "," + carLon, distance: 2000, app_id: "DemoAppId01082013GAL", app_code: "AJKnXv84fjrb0KIHawS0Tg"}).get(function(data) {
-            console.log(data)
-        }
-        );
+            getIsoline({
+                mode: "fastest;car",
+                start: "geo!" + carLat + "," + carLon,
+                distance: electricRange * 2.5,
+                app_id: "XEtYgvPuYfcGE3oFj0KJ",
+                app_code: "O7o41_pLJ2s_PNZHYojsBQ"}).get(
+                    function(err, data, headers) {
+                        console.log(data);
+                        drawIso(data.Response.isolines[0].value);
+                    });
+
+            getIsoline({
+                mode: "fastest;car",
+                start: "geo!" + carLat + "," + carLon,
+                distance: (electricRange + gasRange) * 1.5,
+                app_id: "XEtYgvPuYfcGE3oFj0KJ",
+                app_code: "O7o41_pLJ2s_PNZHYojsBQ"}).get(
+                    function(err, data, headers) {
+                        console.log(data);
+                        drawIso2(data.Response.isolines[0].value);
+                    });
+
+        }, 8000);*/
+
+        function drawIso (data) {
+            var strip = new H.geo.Strip();
+            data.forEach(function(point) {
+                var pointParts = point.split(',');
+                strip.pushLatLngAlt(pointParts[0], pointParts[1]);
+            });
+            var polygon = new H.map.Polygon(strip);
+            polygon.setStyle({fillColor: 'rgba(30,235,120, 0.35)'});
+            map.addObject(polygon);
+        };
+
+        function drawIso2 (data) {
+            var strip = new H.geo.Strip();
+            data.forEach(function(point) {
+                var pointParts = point.split(',');
+                strip.pushLatLngAlt(pointParts[0], pointParts[1]);
+            });
+            var polygon = new H.map.Polygon(strip);
+            polygon.setStyle({fillColor: 'rgba(87,200,235, 0.35)'});
+            map.addObject(polygon);
+        };
 
         var electricRange, gasRange;
         getBattery(function (data) {
