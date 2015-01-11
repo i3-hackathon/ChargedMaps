@@ -227,6 +227,13 @@
             });
         };
 
+        var address = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/navigation/")
+        var sendAddress = function (data, callback) {
+            address.post(data, function() {
+                callback();
+            })
+        };
+
         var lastTrip = fermata.json("http://api.hackthedrive.com/vehicles/" + vin + "/lastTrip/");
         var getLastTrip = function (callback) {
             lastTrip.get(function (err, data, headers) {
@@ -339,6 +346,13 @@
 
     <!-- Draw Range Boundaries -->
     <script type="text/javascript">
+        var getIsoline = fermata.json("http://route.st.nlp.nokia.com/routing/6.2/calculateisoline.json/)
+
+        getIsoline.({mode: "fastest;car", start: carLat + "," + carLon, distance: 2000, app_id: "DemoAppId01082013GAL", app_code: "AJKnXv84fjrb0KIHawS0Tg"}).get(function(data) {
+            console.log(data)
+        }
+        );
+
         var electricRange, gasRange;
         getBattery(function (data) {
             electricRange = data.remainingRangeKm * 100;
